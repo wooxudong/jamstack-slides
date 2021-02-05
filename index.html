@@ -4,11 +4,13 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<title>JAMstack: How to Build Your Own Website</title>
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+		<link rel="stylesheet" href="dist/theme/solarized.css" id="theme">
 
 		<!-- Theme used for syntax highlighted code -->
 		<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
@@ -16,12 +18,68 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+					<img src="https://images.prismic.io/xudong-web/aba04f51-31ea-4b5a-9ae4-497c3f899d14_jamstack-thumbnail.png?auto=compress,format" style="height: 300px;">
+					<h3>JAMstack: How to Build Your Own Website</h3>
+					<h5>By Wu Xudong | 9th Feb, 2021</h5>
+				</section>
+				<section>
+					<section>
+						<h1>What is JAMstack ?</h1>
+					</section>
+					<section>
+						<img src="https://images.prismic.io/xudong-web/9c4709c8-c06e-4ddd-a4b4-b014d075a4b6_jamstack.png?auto=compress,format" />
+					</section>
+				</section>
+				<section>
+					<section>
+						<h1>How to implement it?</h1>
+					</section>
+					<section>
+						<img src="https://images.prismic.io/xudong-web/e6d30502-7ca5-48c2-a3a7-81997d5446c9_gatsby-runtime.png?auto=compress,format" />
+					</section>
+					<section>
+						<h1>show me the code</h1>
+					</section>
+				</section>
+				<section data-auto-animate>
+						<h2 data-id="code-title">Connect Gatsby to Prismic</h2>
+						<pre data-id="code-animation">
+							<code class="hljs" style="font-size:15px;" data-trim data-line-numbers="|4-5|9-12|16-19">
+							{
+								resolve: `gatsby-source-prismic-graphql`,
+								options: {
+									repositoryName: process.env.PRISMIC_REPOSITORY_NAME,
+									accessToken: process.env.PRISMIC_ACCESS_TOKEN,
+									previews: false,
+									pages: [
+										{
+											type: 'Blogpost',
+											match: '/blog/:uid',
+											component: require.resolve(
+												'./src/components/templates/blogTemplate.js'
+											),
+										},
+										{
+											type: 'Portfolioitem',
+											match: '/portfolio/:uid',
+											component: require.resolve(
+												'./src/components/templates/portfolioTemplate.js'
+											),
+										},
+									],
+									sharpKeys: [/image|photo|picture/, 'thumbnail'],
+								},
+							}
+						</code>
+					  </pre>
+				</section>
 			</div>
 		</div>
 
 		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/search/search.js"></script>
 		<script src="plugin/notes/notes.js"></script>
 		<script src="plugin/markdown/markdown.js"></script>
 		<script src="plugin/highlight/highlight.js"></script>
@@ -30,10 +88,13 @@
 			// - https://revealjs.com/initialization/
 			// - https://revealjs.com/config/
 			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
 				hash: true,
 
 				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
 			});
 		</script>
 	</body>
