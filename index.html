@@ -31,6 +31,9 @@
 					<section>
 						<img src="https://images.prismic.io/xudong-web/9c4709c8-c06e-4ddd-a4b4-b014d075a4b6_jamstack.png?auto=compress,format" />
 					</section>
+					<section>
+						<img src="assets/jamstack.png" />
+					</section>
 				</section>
 
 				<section>
@@ -41,15 +44,57 @@
 						<img src="https://images.prismic.io/xudong-web/e6d30502-7ca5-48c2-a3a7-81997d5446c9_gatsby-runtime.png?auto=compress,format" />
 					</section>
 					<section>
-						<h1>show me the code</h1>
+						<h2>Why Gatsby ?</h2>
+						<p class="fragment">1. Server side rednering at <span class="fragment"><b>build time</b></span></p>
+						<p class="fragment">2. Route-based code splitting </p>
+						<p class="fragment">3. Mordern APIs </p>
+					</section>
+					<section>
+						<h2>Why Prismic ?</h2>
+						<p class="fragment">1. Headless CMS and easy to integrate with Gatsby</p>
+						<p class="fragment">2. Support Content Slicing</p>
+						<p class="fragment">3. Free for full features</p>	
+					</section>
+					<section>
+						<h2>Why Netlify ?</h2>
+						<p class="fragment">1. Great for static sites generator</p>
+						<p class="fragment">2. Form support with no code</p>
+						<p class="fragment">3. Deploy previews</p>	
+						<p class="fragment">4. Domain support with https</p>	
+					</section>
+					<section>
+						<h1>show me the code ?</h1>
+					</section>
+					<section>
+						<h3>Wait... Let's look at Prismic and Netlify first</h3>
 					</section>
 				</section>
-
+					
 				<section>
 					<section data-auto-animate>
-							<h2 data-id="code-title">Connect Gatsby to Prismic</h2>
+						<h2 data-id="code-title">Gatsby Project Structure</h2>
+						<pre data-id="code-animation">
+							<code class="hljs" style="font-size:15px;tab-size: 15px" data-trim data-line-numbers="6|10">
+								/
+								|-- /.cache
+								|-- /plugins
+								|-- /public
+								|-- /src
+										|-- /pages
+										|-- /templates
+										|-- html.js
+								|-- /static
+								|-- gatsby-config.js
+								|-- gatsby-node.js
+								|-- gatsby-ssr.js
+								|-- gatsby-browser.js
+						</code>
+						</pre>
+				</section>
+					<section data-auto-animate>
+							<h3 data-id="code-title">Connect Gatsby to Prismic in gatsby-config.js</h3>
 							<pre data-id="code-animation">
-								<code class="hljs" style="font-size:15px;" data-trim data-line-numbers="2|4-5|9-12|16-19">
+								<code class="hljs" style="font-size:15px;tab-size: 15px" data-trim data-line-numbers="2|4-5|9-12|16-19">
 								{
 									resolve: `gatsby-source-prismic-graphql`,
 									options: {
@@ -80,49 +125,138 @@
 					</section>
 					
 					<section data-auto-animate>
-						<h2 data-id="code-title">Get data through graphql</h2>
+						<h2 data-id="code-title">Get prismic data through graphql</h2>
 						<pre data-id="code-animation">
-							<code class="hljs" style="font-size:15px;tab-size: 4px;"  data-trim data-line-numbers="2|4|7"><script type="text/template">
+							<code class="hljs" style="font-size:15px;tab-size: 15px;"  data-trim data-line-numbers="2|4|7|22|28|35"><script type="text/template">
 								import React, { useEffect, useState } from 'react';
 								import { graphql } from 'gatsby';	
 
 								const BlogPage = ({ data: { site, prismic }, classes }) => {
 									...
 								}
-									export const pageQuery = graphql`
+								export const pageQuery = graphql`
 										query indexPageQuery {
-											prismic {
-												allBlogposts(sortBy: publish_date_DESC) {
+										  prismic {
+												allBlogposts(uid: $uid) {
 													edges {
 														node {
 															title
 															author
+															publish_date
 															tags {
 																tag
 															}
+															abstract
 															thumbnail
-															thumbnailSharp {
-																childImageSharp {
-																	fluid(maxWidth: 500, maxHeight: 270) {
-																		...GatsbyImageSharpFluid_tracedSVG
+															body {
+																... on PRISMIC_BlogpostBodyRich_text {
+																	type
+																	primary {
+																		paragraph
 																	}
 																}
-															}
-															abstract
-															publish_date
-															_meta {
-																uid
-															}
-														}
-													}
-												}
-											}
-										}
+																... on PRISMIC_BlogpostBodyCode {
+																	type
+																	label
+																	primary {
+																		code
+																	}
+																}
+																... on PRISMIC_BlogpostBodyQuote {
+																	type
+																	primary {
+																		quote
+																		type
+																	}
+																}
+																... on PRISMIC_BlogpostBodyMedia {
+																	type
+																	primary {
+																		artist
+																		title1
+																		review
+																	}
+																}
+												...
 									`;
 						</script>
 						</code>
 						</pre>
+					</section>
+
+					<section>
+						<h3 data-id="code-title">Create dynamic content through Prismic Slice</h3>
+						<pre data-id="code-animation">
+							<code class="hljs" style="font-size:15px;tab-size: 15px;" data-trim data-line-numbers="6|7|9|13|15|22">
+								<script type="text/template">
+									export default ({ body }) => {
+										return (
+											<>
+												{body &&
+													body.map((bodyContent, i) => {
+														switch (bodyContent.type) {
+															case CODE:
+																return <CodeSlice key={i} content={bodyContent.primary.code} />;
+															case RICH_TEXT:
+																return (
+																	<ParagraphSlice paragraph={bodyContent.primary.paragraph} />
+																);
+															case TABLEAU:
+																return <TableauReport url={bodyContent.primary.link} />;
+															case QUOTE:
+																return (
+																	<Quote
+																		quote={bodyContent.primary.quote}
+																		type={bodyContent.primary.type}
+																	/>
+																);
+															case MEDIA:
+																return <Media {...bodyContent.primary} />;
+															default:
+																return null;
+														}
+													})}
+											</>
+										);
+									};
+								</script>
+						</code>
+						</pre>
+					</section>
+
+					<section>
+						<h2 data-id="code-title">Netlify Form function with No Code</h2>
+						<pre data-id="code-animation">
+							<code class="hljs" style="font-size:15px;tab-size: 15px;" data-trim data-line-numbers="1|3-5">
+								<script type="text/template">
+									<form name="contact" method="POST" data-netlify-honeypot="bot-field" data-netlify="true">
+										<input type="hidden" name="form-name" value="contact" />
+										<div className={classes.hidden}>
+											<label>Don’t fill this out if you're human: <input name="bot-field" /></label>
+										</div>
+										<div className={classes.fields}>
+											<div className={`${classes.field} ${classes.half}`}>
+												<Label htmlFor="name">Name</Label>
+												<InputText type="text" name="name" id="name" />
+											</div>
+											<div className={`${classes.field} ${classes.half}`}>
+												<Label htmlFor="email">Email</Label>
+												<InputText type="text" name="email" id="email" />
+											</div>
+											<div className={classes.field}>
+												<Label htmlFor="message">Message</Label>
+												<Textarea name="message" id="message" rows="4" />
+											</div>
+										</div>
+										...
+								</script>
+						</code>
+						</pre>	
+					</section>
 				</section>
+			
+				<section>
+					<h1> Any Questions? </h1>
 				</section>
 			</div>
 		</div>
